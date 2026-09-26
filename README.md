@@ -201,7 +201,7 @@ KF-DeBERTa의 `정분`은 Kiwi가 `정부/N`으로 잘못 분석한 경우로, �
 
 ## 주요 발견 사항
 
-- **한글 vocab 수와 효율**: 한글 포함 vocab이 3만 개를 넘는 tokenizer(Kanana-2 3.1만, K-EXAONE 3.9만, Motif-3 5.1만, Solar Open2 5.6만, A.X-K2 6.5만)는 샘플 문서에서 모두 어절당 1.96~2.05토큰으로 거의 같았습니다. 이 구간에서는 한글 vocab을 더 늘려도 토큰 수가 크게 줄지 않았습니다. 반면 GPT-4(cl100k_base)는 한글 vocab이 299개뿐이라 어절당 4.78토큰으로 두 배 이상 많습니다. 한글 포함 vocab이 10만 개로 가장 많은 KF-DeBERTa는 어절당 2.19토큰으로, 한글 vocab 수에 비해 효율 이득이 크지 않았습니다. 전체 vocab이 3만 개대인 KLUE RoBERTa(2.41)와 KoELECTRA(2.44)도 Kiwi CoCo LM과 비슷한 수준입니다. 다만 두 모델은 vocab 대부분을 한국어에 써서 영어는 단어당 약 2.5토큰으로, 다른 모델(1.0~1.9)보다 크게 불리합니다. 전체 vocab이 64,000개인 Kiwi CoCo LM(어절당 2.37토큰)도 20만 개 안팎의 다국어 tokenizer(GPT-5 2.96, Gemma 4 2.81)보다 한국어를 효율적으로 처리합니다.
+- **한글 vocab 수와 효율**: 한글 포함 vocab이 3만 개를 넘는 tokenizer(Kanana-2 3.1만, K-EXAONE 3.9만, Motif-3 5.1만, Solar Open2 5.6만, A.X-K2 6.5만)는 샘플 문서에서 모두 어절당 1.96 ~ 2.05토큰으로 거의 같았습니다. 이 구간에서는 한글 vocab을 더 늘려도 토큰 수가 크게 줄지 않았습니다. 반면 GPT-4(cl100k_base)는 한글 vocab이 299개뿐이라 어절당 4.78토큰으로 두 배 이상 많습니다. 한글 포함 vocab이 10만 개로 가장 많은 KF-DeBERTa는 어절당 2.19토큰으로, 한글 vocab 수에 비해 효율 이득이 크지 않았습니다. 전체 vocab이 3만 개대인 KLUE RoBERTa(2.41)와 KoELECTRA(2.44)도 Kiwi CoCo LM과 비슷한 수준입니다. 다만 두 모델은 vocab 대부분을 한국어에 써서 영어는 단어당 약 2.5토큰으로, 다른 모델(1.0 ~ 1.9)보다 크게 불리합니다. 전체 vocab이 64,000개인 Kiwi CoCo LM(어절당 2.37토큰)도 20만 개 안팎의 다국어 tokenizer(GPT-5 2.96, Gemma 4 2.81)보다 한국어를 효율적으로 처리합니다.
 - **한국어 vocab의 유사도**: 모델 간 한글 포함 vocab 집합의 Jaccard 유사도를 비교하면 뚜렷한 군집이 보입니다.
   - 한국어 특화 대형 vocab: Motif-3–A.X-K2 0.59, Motif-3–Kanana-2 0.52, Motif-3–Solar Open2 0.49
   - 다국어 모델: Gemma 2–Gemma 4 0.48, GPT-5–Gemma 4 0.44
