@@ -92,10 +92,77 @@ def markdown_cell(value):
         text = text.replace(char, '\\' + char)
     return text.replace('\r', '&#13;').replace('\n', '<br>')
 
-def average_length(vocabs):
+BYTE_RUN = re.compile(r'(?:\\x[0-9a-fA-F]{2})+')
+
+def char_length(vocab):
     # 연속된 미완성 UTF-8 바이트 표기(\xNN)는 한 덩어리를 한 글자로 계산
-    lengths = (len(re.sub(r'(?:\\x[0-9a-fA-F]{2})+', '?', vocab)) for vocab in vocabs)
-    return sum(lengths) / len(vocabs) if vocabs else 0.0
+    return len(BYTE_RUN.sub('?', vocab))
+
+def average_length(vocabs):
+    return sum(map(char_length, vocabs)) / len(vocabs) if vocabs else 0.0
+
+def is_hangul_fragment(run):
+    """\\xNN 바이트 배열이 완성형 한글(U+AC00–U+D7A3)의 UTF-8 앞부분인지 판별"""
+    data = bytes.fromhex(run.replace('\\x', ''))
+    if not 0xEA <= data[0] <= 0xED:
+        return False
+    if len(data) == 1:
+        return True
+    return (0xEA, 0xB0) <= (data[0], data[1]) <= (0xED, 0x9E)
+
+def is_incomplete_korean(vocab):
+    """한글과 미완성 바이트가 섞였거나, 한글 음절의 앞부분 바이트를 포함한 vocab"""
+    runs = BYTE_RUN.findall(vocab)
+    if not runs:
+        return False
+    return bool(re.search(r'[가-힣]', vocab)) or any(map(is_hangul_fragment, runs))
+
+def repeated_unit(vocab):
+    """같은 단위가 세 번 이상 반복되어서만 이루어진 vocab이면 (반복 단위, 반복 횟수)를 반환"""
+    text = vocab.strip()
+    match = re.fullmatch(r'(.+?)\1{2,}', text)
+    if not match or char_length(text) < 4:
+        return None
+    unit = match.group(1)
+    return unit, len(text) // len(unit)
+
+def print_korean_vocab_shapes(fout, all_normal_vocabs, korean_vocabs, top_n):
+    print('## 한글 vocab 형태\n', file=fout)
+    lengths = {vocab: char_length(vocab.strip()) for vocab in korean_vocabs}
+    multi_word = [vocab for vocab in korean_vocabs if ' ' in vocab.strip()]
+    repeated = [(vocab, unit) for vocab in korean_vocabs if (unit := repeated_unit(vocab))]
+    fragments = [vocab for vocab in all_normal_vocabs if vocab not in lengths and is_incomplete_korean(vocab)]
+    incomplete = [vocab for vocab in korean_vocabs if is_incomplete_korean(vocab)] + fragments
+    korean_related = len(korean_vocabs) + len(fragments)
+    print_markdown_table(fout, ('항목', '값'), (
+        ('5글자 이상 한글 vocab 수', f'{sum(length >= 5 for length in lengths.values()):,}'),
+        ('10글자 이상 한글 vocab 수', f'{sum(length >= 10 for length in lengths.values()):,}'),
+        ('여러 어절로 된 한글 vocab 수', f'{len(multi_word):,}'),
+        ('반복 패턴 한글 vocab 수', f'{len(repeated):,}'),
+        ('불완전 한글 vocab 수', f'{len(incomplete):,}'),
+        ('불완전 한글 vocab 비율', f'{len(incomplete) / korean_related:.2%}' if korean_related else '0.00%'),
+    ))
+    print('글자 수는 앞뒤 공백을 제외하고 계산합니다. '
+          '여러 어절로 된 vocab은 앞뒤를 제외한 가운데에 공백이 있는 vocab입니다. '
+          '반복 패턴 vocab은 같은 단위가 세 번 이상 반복되어서만 이루어진 4글자 이상의 vocab입니다. '
+          '불완전 한글 vocab은 한글과 미완성 UTF-8 바이트가 섞여 있거나 한글 음절의 앞부분 바이트를 포함한 vocab이며, '
+          '비율의 분모는 한글 포함 vocab 수에 한글 없이 한글 음절 앞부분 바이트를 포함한 vocab 수를 더한 값입니다. '
+          '음절 뒷부분 바이트만 있는 경우는 원래 문자를 알 수 없으므로 세지 않습니다.\n', file=fout)
+
+    print(f'### 가장 긴 한글 vocab Top {top_n}\n', file=fout)
+    longest = sorted(korean_vocabs, key=lambda vocab: lengths[vocab], reverse=True)[:top_n]
+    print_markdown_table(fout, ('순위', 'vocab', '글자 수'), [
+        (rank, (vocab,), lengths[vocab]) for rank, vocab in enumerate(longest, 1)
+    ], vocab_column=1)
+
+    print(f'### 반복 패턴 한글 vocab Top {top_n}\n', file=fout)
+    if not repeated:
+        print('반복 패턴 한글 vocab이 없습니다.\n', file=fout)
+        return
+    repeated.sort(key=lambda item: lengths[item[0]], reverse=True)
+    print_markdown_table(fout, ('순위', 'vocab', '반복 단위', '반복 횟수'), [
+        (rank, (vocab,), unit, count) for rank, (vocab, (unit, count)) in enumerate(repeated[:top_n], 1)
+    ], vocab_column=1)
 
 def print_markdown_table(fout, headers, rows, vocab_column=None):
     print('| ' + ' | '.join(headers) + ' |', file=fout)
@@ -377,6 +444,7 @@ def main(args):
               '평균 글자 수에는 공백을 포함하며, 연속된 미완성 UTF-8 바이트 배열은 한 덩어리를 한 글자로 계산합니다.\n', file=fout)
 
         print_sample_token_stats(fout, encode, samples)
+        print_korean_vocab_shapes(fout, all_normal_vocabs, all_korean_vocabs, max(0, args.vocab_top_n))
 
         print_morph_rankings(
             fout, '전체 형태소', morph_examples, prefix_morph_examples,
@@ -403,6 +471,7 @@ if __name__ == '__main__':
     parser.add_argument('--output')
     parser.add_argument('--vocab-examples', nargs='*', choices=('all', 'prefix', 'geo'), default=['prefix'],)
     parser.add_argument('--morpheme-top-n', type=int, default=20)
+    parser.add_argument('--vocab-top-n', type=int, default=20)
     parser.add_argument('--morphemes', nargs='+', action='extend', default=[], metavar='MORPH')
     parser.add_argument('--pattern', nargs='+', action='extend', type=compile_pattern, default=[], metavar='REGEX')
     parser.add_argument('--no-concat-nouns', dest='concat_nouns', action='store_false')
