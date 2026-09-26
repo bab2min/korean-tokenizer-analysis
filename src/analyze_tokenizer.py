@@ -4,6 +4,7 @@ import sys
 from contextlib import nullcontext
 from html import escape
 from collections import defaultdict
+from pathlib import Path
 
 from transformers import AutoTokenizer
 from tokenizers import decoders
@@ -210,8 +211,81 @@ def normalize_morphs(tokens, concat_nouns=True):
             morphs.append((token.form, tag))
     return tuple(form + '/' + tag for form, tag in morphs)
 
+SAMPLE_DIR = Path(__file__).resolve().parent.parent / 'samples'
+
+def read_sample(path):
+    with open(path, encoding='utf-8', newline='') as f:
+        return f.read()
+
+def print_sample_token_stats(fout, encode, samples):
+    print('## 샘플 문서 토큰화 통계\n', file=fout)
+    rows = []
+    for lang, text in samples.items():
+        tokens = len(encode(text))
+        n_bytes = len(text.encode('utf-8'))
+        n_words = len(text.split())
+        rows.append((
+            lang, f'{len(text):,}', f'{n_bytes:,}', f'{n_words:,}', f'{tokens:,}',
+            f'{len(text) / tokens:.2f}' if tokens else '0.00',
+            f'{n_bytes / tokens:.2f}' if tokens else '0.00',
+            f'{tokens / n_words:.2f}' if n_words else '0.00',
+        ))
+    print_markdown_table(fout, (
+        '언어', '글자 수', 'UTF-8 바이트 수', '어절 수', '토큰 수',
+        '토큰당 평균 글자 수', '토큰당 평균 바이트 수', '어절당 평균 토큰 수',
+    ), rows)
+    print('토큰 수는 BOS/EOS 등 특수 토큰을 제외하고 계산하며, 글자 수와 바이트 수에는 공백과 줄바꿈 문자를 포함합니다. '
+          '어절은 공백 문자로 나눈 단위이며 영어에서는 단어에 해당합니다. '
+          '언어마다 글자 하나에 담기는 정보량이 다르므로 토큰당 글자/바이트 수는 같은 언어 안에서 토크나이저끼리 비교할 때 사용하는 것이 적절합니다.\n', file=fout)
+
+def component_steps(component):
+    """normalizer/pre_tokenizer 설정을 Sequence를 펼친 단계 목록으로 반환"""
+    if component is None:
+        return []
+    config = json.loads(component.__getstate__())
+    def flatten(config):
+        if config['type'] == 'Sequence':
+            for child in config.get('normalizers') or config.get('pretokenizers') or []:
+                yield from flatten(child)
+        else:
+            yield config
+    return list(flatten(config))
+
+def describe_step(config):
+    kind = config['type']
+    pattern = config.get('pattern', {})
+    if kind == 'Replace' and 'String' in pattern:
+        return f"Replace({pattern['String']!r}→{config['content']!r})"
+    if kind == 'Split':
+        if 'Regex' in pattern:
+            return 'Split(정규식)'
+        return f"Split({pattern.get('String')!r})"
+    if kind == 'ByteLevel' and config.get('use_regex'):
+        return 'ByteLevel(GPT-2 정규식 분할 포함)'
+    if kind == 'Metaspace':
+        return f"Metaspace(공백→{config['replacement']!r})"
+    if kind == 'BertPreTokenizer':
+        return 'BertPreTokenizer(공백·구두점 분할)'
+    return kind
+
+def describe_tokenizer(backend):
+    model = type(backend.model).__name__
+    pre_steps = component_steps(backend.pre_tokenizer)
+    if any(step['type'] == 'ByteLevel' for step in pre_steps):
+        unit, method = 'UTF-8 바이트 (byte-level)', f'Byte-level {model}'
+    elif getattr(backend.model, 'byte_fallback', False):
+        unit, method = '유니코드 문자 + 미등록 문자는 UTF-8 바이트로 분해 (byte fallback)', f'{model} (byte fallback)'
+    else:
+        unit, method = '유니코드 문자 (미등록 문자는 UNK)', model
+    return {
+        '방식': method,
+        '기본 단위': unit,
+        '정규화': ' → '.join(map(describe_step, component_steps(backend.normalizer))) or '없음',
+        '사전 분할': ' → '.join(map(describe_step, pre_steps)) or '없음',
+    }
+
 def load_vocab(source):
-    """실제 vocab 수와 ID 순서의 일반 vocab 표면형을 반환"""
+    """실제 vocab 수, ID 순서의 일반 vocab 표면형, 텍스트 인코딩 함수, tokenizer 방식 정보를 반환"""
     if source.startswith('tiktoken:'):
         name = source.removeprefix('tiktoken:')
         if not name:
@@ -228,7 +302,15 @@ def load_vocab(source):
         encoding = tiktoken.get_encoding(name)
         token_bytes = sorted(encoding.token_byte_values(), key=encoding.encode_single_token)
         vocab_count = len(token_bytes) + len(encoding.special_tokens_set)
-        return vocab_count, [raw.decode('utf-8', errors='backslashreplace') for raw in token_bytes]
+        return (
+            vocab_count, [raw.decode('utf-8', errors='backslashreplace') for raw in token_bytes],
+            encoding.encode_ordinary, {
+                '방식': 'Byte-level BPE (tiktoken)',
+                '기본 단위': 'UTF-8 바이트 (byte-level)',
+                '정규화': '없음',
+                '사전 분할': 'Split(정규식)',
+            },
+        )
 
     tokenizer = AutoTokenizer.from_pretrained(source, trust_remote_code=True)
     backend = getattr(tokenizer, 'backend_tokenizer', None)
@@ -245,11 +327,18 @@ def load_vocab(source):
         decoded = decoder.decode(token)
         if decoded:
             normal_vocabs.append(decoded)
-    return len(vocab), normal_vocabs
+    return (
+        len(vocab), normal_vocabs, lambda text: tokenizer.encode(text, add_special_tokens=False),
+        describe_tokenizer(backend),
+    )
 
 
 def main(args):
-    vocab_count, all_normal_vocabs = load_vocab(args.tokenizer)
+    vocab_count, all_normal_vocabs, encode, tokenizer_info = load_vocab(args.tokenizer)
+    samples = {
+        '한국어': read_sample(args.ko_sample),
+        '영어': read_sample(args.en_sample),
+    }
     all_korean_vocabs = [vocab for vocab in all_normal_vocabs if re.search(r'[가-힣]', vocab)]
 
     kiwi = Kiwi(num_workers=4)
@@ -270,6 +359,7 @@ def main(args):
     with output as fout:
         print('# Tokenizer 한국어 분포 분석\n', file=fout)
         print(f'분석 대상: {markdown_cell(args.tokenizer)}\n', file=fout)
+        print_markdown_table(fout, ('항목', '값'), tokenizer_info.items())
         print('## 전체 통계\n', file=fout)
         korean_ratio = len(all_korean_vocabs) / vocab_count if vocab_count else 0.0
         print_markdown_table(fout, ('항목', '값'), (
@@ -285,6 +375,8 @@ def main(args):
         ))
         print('한글 포함 여부는 완성형 한글(가–힣)을 기준으로 합니다. '
               '평균 글자 수에는 공백을 포함하며, 연속된 미완성 UTF-8 바이트 배열은 한 덩어리를 한 글자로 계산합니다.\n', file=fout)
+
+        print_sample_token_stats(fout, encode, samples)
 
         print_morph_rankings(
             fout, '전체 형태소', morph_examples, prefix_morph_examples,
@@ -315,4 +407,6 @@ if __name__ == '__main__':
     parser.add_argument('--pattern', nargs='+', action='extend', type=compile_pattern, default=[], metavar='REGEX')
     parser.add_argument('--no-concat-nouns', dest='concat_nouns', action='store_false')
     parser.add_argument('--include-s', action='store_true')
+    parser.add_argument('--ko-sample', metavar='FILE', default=SAMPLE_DIR / 'ko.txt')
+    parser.add_argument('--en-sample', metavar='FILE', default=SAMPLE_DIR / 'en.txt')
     main(parser.parse_args())
