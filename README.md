@@ -19,6 +19,8 @@ vocab 중 한글이 들어간 토큰을 골라 [Kiwi](https://github.com/bab2min
 | [K-EXAONE](reports/tokenizer_k_exaone_236b.md) | Byte-level BPE | 153,600 | 39,269 | 25.57% | 18,859 | 3.39 |
 | [Solar Open2](reports/tokenizer_solar_open2_250b.md) | Byte-level BPE | 196,608 | 56,366 | 28.67% | 21,494 | 3.85 |
 | [A.X-K2](reports/tokenizer_ax_k2.md) | Byte-level BPE | 163,840 | 65,265 | 39.83% | 21,617 | 3.42 |
+| [KoELECTRA](reports/tokenizer_koelectra.md) | WordPiece | 35,000 | 29,021 | 82.92% | 22,175 | 3.06 |
+| [KLUE RoBERTa](reports/tokenizer_klue_roberta.md) | WordPiece | 32,000 | 28,445 | 88.89% | 22,239 | 3.12 |
 | [Kiwi CoCo LM](reports/tokenizer_kiwi.md) | Byte-level BPE | 64,000 | 26,858 | 41.97% | 19,073 | 2.98 |
 | [A.X-Encoder](reports/tokenizer_ax_encoder.md) | WordPiece | 50,000 | 24,084 | 48.17% | 17,501 | 2.63 |
 | [KF-DeBERTa](reports/tokenizer_kf_deberta.md) | WordPiece | 130,000 | 104,522 | 80.40% | 80,239 | 3.53 |
@@ -39,6 +41,8 @@ vocab 중 한글이 들어간 토큰을 골라 [Kiwi](https://github.com/bab2min
 | Kanana-2 | 1,093 | 2.05 | 5.64 | 860 | 1.24 | 5.24 |
 | KF-DeBERTa | 1,172 | 2.19 | 5.26 | 1,123 | 1.62 | 4.01 |
 | Kiwi CoCo LM | 1,266 | 2.37 | 4.87 | 906 | 1.31 | 4.97 |
+| KLUE RoBERTa | 1,287 | 2.41 | 4.79 | 1,761 | 2.54 | 2.56 |
+| KoELECTRA | 1,303 | 2.44 | 4.73 | 1,722 | 2.48 | 2.61 |
 | HyperCLOVA X SEED | 1,336 | 2.50 | 4.61 | 901 | 1.30 | 5.00 |
 | A.X-Encoder | 1,356 | 2.54 | 4.54 | 1,313 | 1.89 | 3.43 |
 | Gemma 4 | 1,499 | 2.81 | 4.11 | 865 | 1.25 | 5.21 |
@@ -66,6 +70,8 @@ vocab 중 한글이 들어간 토큰을 골라 [Kiwi](https://github.com/bab2min
 | Kiwi CoCo LM | 209 | 0 | 0 | 1 | 367 | 1.35% |
 | A.X-Encoder | 88 | 0 | 0 | 0 | 0 | 0.00% |
 | KF-DeBERTa | 3,002 | 3 | 0 | 0 | 0 | 0.00% |
+| KoELECTRA | 261 | 0 | 0 | 0 | 0 | 0.00% |
+| KLUE RoBERTa | 261 | 0 | 0 | 0 | 0 | 0.00% |
 
 - 글자 수는 앞뒤 공백을 빼고 세며, 연속된 미완성 UTF-8 바이트는 한 덩어리를 한 글자로 셉니다.
 - **여러 어절**: 가운데에 공백이 들어 있는 한글 vocab
@@ -91,11 +97,13 @@ vocab 중 한글이 들어간 토큰을 골라 [Kiwi](https://github.com/bab2min
 | Kiwi CoCo LM | 3 | 2 | 2 | 1 |
 | A.X-Encoder | 2 | 1 | 2 | 1 |
 | KF-DeBERTa | 4 | 3 | 5 | 4 |
+| KoELECTRA | 2 | 1 | 2 | 1 |
+| KLUE RoBERTa | 2 | 1 | 2 | 1 |
 
 - **vocab 수**: Kiwi로 분석했을 때 `사람/N`, `정부/N` 형태소가 들어 있는 vocab 수입니다. 연속된 명사는 하나로 합쳐 분석하므로 `정부기관`처럼 복합 명사 안에 들어간 경우는 세지 않습니다.
 - **고유 형태 수**: 앞뒤 공백(NBSP 포함)을 제거했을 때 서로 다른 형태의 수입니다. vocab 수와의 차이는 ` 사람`과 `사람`처럼 공백 유무만 다른 중복 vocab 수입니다.
 
-각 tokenizer에 실제로 들어 있는 vocab 전체 목록입니다. `\xa0`로 표시된 것은 vocab에 원래 들어 있는 NBSP입니다. WordPiece인 A.X-Encoder와 KF-DeBERTa에서는 앞에 공백이 붙은 것이 단어 첫머리 토큰, 붙지 않은 것이 `##`로 시작하는 단어 중간 토큰입니다.
+각 tokenizer에 실제로 들어 있는 vocab 전체 목록입니다. `\xa0`로 표시된 것은 vocab에 원래 들어 있는 NBSP입니다. WordPiece 방식인 A.X-Encoder, KF-DeBERTa, KoELECTRA, KLUE RoBERTa에서는 앞에 공백이 붙은 것이 단어 첫머리 토큰, 붙지 않은 것이 `##`로 시작하는 단어 중간 토큰입니다.
 
 #### `사람`
 
@@ -114,6 +122,8 @@ vocab 중 한글이 들어간 토큰을 골라 [Kiwi](https://github.com/bab2min
 | Kiwi CoCo LM | 3 | ` 사람`, ` 한사람`, `사람` |
 | A.X-Encoder | 2 | ` 사람`, `사람` |
 | KF-DeBERTa | 4 | ` 사람`, ` 사람됨`, ` 사람인`, `사람` |
+| KoELECTRA | 2 | ` 사람`, `사람` |
+| KLUE RoBERTa | 2 | ` 사람`, `사람` |
 
 #### `정부`
 
@@ -132,6 +142,8 @@ vocab 중 한글이 들어간 토큰을 골라 [Kiwi](https://github.com/bab2min
 | Kiwi CoCo LM | 2 | ` 정부`, `정부` |
 | A.X-Encoder | 2 | ` 정부`, `정부` |
 | KF-DeBERTa | 5 | ` 이정부`, ` 정부`, ` 정분`, `정부`, `정부지` |
+| KoELECTRA | 2 | ` 정부`, `정부` |
+| KLUE RoBERTa | 2 | ` 정부`, `정부` |
 
 KF-DeBERTa의 `정분`은 Kiwi가 `정부/N`으로 잘못 분석한 경우로, 실제로는 `정부`와 관계없는 단어입니다.
 
@@ -149,6 +161,8 @@ KF-DeBERTa의 `정분`은 Kiwi가 `정부/N`으로 잘못 분석한 경우로, �
 | A.X-K2 | 97 | 0 | |
 | Motif-3 | 95 | 0 | |
 | Kanana-2 | 54 | 0 | |
+| KLUE RoBERTa | 27 | 0 | |
+| KoELECTRA | 26 | 0 | |
 | Kiwi CoCo LM | 25 | 0 | |
 | A.X-Encoder | 20 | 0 | |
 | Gemma 4 | 3 | 0 | |
@@ -178,6 +192,8 @@ KF-DeBERTa의 `정분`은 Kiwi가 `정부/N`으로 잘못 분석한 경우로, �
 | Kiwi CoCo LM | 2 | 0 | 2.06 | `겼`, `뻤` | `\xed`, `\x89`, `\x9c` |
 | A.X-Encoder | 16 | 0 | 1.00 | `걁`, `겼`, `긂`, `깄`, `뇄`, `렜`, `뢔`, `뢨`, `붴`, `뻤`, `쌘`, `얬`, `칢`, `텼`, `퉜`, `홥` | ` 퉜` |
 | KF-DeBERTa | 6 | 10 | 1.00 | `겼`, `렜`, `뢨`, `뻤`, `텼`, `퉜` | ` 퉜` |
+| KoELECTRA | 6 | 10 | 1.00 | `겼`, `깄`, `뻤`, `쌘`, `텼`, `퉜` | ` 퉜` |
+| KLUE RoBERTa | 2 | 14 | 1.00 | `겼`, `뻤` | `[UNK]` |
 
 - **UNK로 처리된 음절 수**: `-`는 tokenizer에 UNK 토큰이 정의되어 있지 않다는 뜻입니다. byte-level BPE와 byte fallback BPE는 모든 문자를 바이트로 나타낼 수 있어서 UNK가 나오지 않습니다.
 - UNK로 처리된 음절은 토큰이 하나여도 원래 정보가 사라지므로 "한 토큰으로 처리된 음절 수"에 넣지 않았습니다.
@@ -185,11 +201,12 @@ KF-DeBERTa의 `정분`은 Kiwi가 `정부/N`으로 잘못 분석한 경우로, �
 
 ## 주요 발견 사항
 
-- **한글 vocab 수와 효율**: 한글 포함 vocab이 3만 개를 넘는 tokenizer(Kanana-2 3.1만, K-EXAONE 3.9만, Motif-3 5.1만, Solar Open2 5.6만, A.X-K2 6.5만)는 샘플 문서에서 모두 어절당 1.96~2.05토큰으로 거의 같았습니다. 이 구간에서는 한글 vocab을 더 늘려도 토큰 수가 크게 줄지 않았습니다. 반면 GPT-4(cl100k_base)는 한글 vocab이 299개뿐이라 어절당 4.78토큰으로 두 배 이상 많습니다. 한글 포함 vocab이 10만 개로 가장 많은 KF-DeBERTa는 어절당 2.19토큰으로, 한글 vocab 수에 비해 효율 이득이 크지 않았습니다. 전체 vocab이 64,000개인 Kiwi CoCo LM(어절당 2.37토큰)도 20만 개 안팎의 다국어 tokenizer(GPT-5 2.96, Gemma 4 2.81)보다 한국어를 효율적으로 처리합니다.
+- **한글 vocab 수와 효율**: 한글 포함 vocab이 3만 개를 넘는 tokenizer(Kanana-2 3.1만, K-EXAONE 3.9만, Motif-3 5.1만, Solar Open2 5.6만, A.X-K2 6.5만)는 샘플 문서에서 모두 어절당 1.96~2.05토큰으로 거의 같았습니다. 이 구간에서는 한글 vocab을 더 늘려도 토큰 수가 크게 줄지 않았습니다. 반면 GPT-4(cl100k_base)는 한글 vocab이 299개뿐이라 어절당 4.78토큰으로 두 배 이상 많습니다. 한글 포함 vocab이 10만 개로 가장 많은 KF-DeBERTa는 어절당 2.19토큰으로, 한글 vocab 수에 비해 효율 이득이 크지 않았습니다. 전체 vocab이 3만 개대인 KLUE RoBERTa(2.41)와 KoELECTRA(2.44)도 Kiwi CoCo LM과 비슷한 수준입니다. 다만 두 모델은 vocab 대부분을 한국어에 써서 영어는 단어당 약 2.5토큰으로, 다른 모델(1.0~1.9)보다 크게 불리합니다. 전체 vocab이 64,000개인 Kiwi CoCo LM(어절당 2.37토큰)도 20만 개 안팎의 다국어 tokenizer(GPT-5 2.96, Gemma 4 2.81)보다 한국어를 효율적으로 처리합니다.
 - **한국어 vocab의 유사도**: 모델 간 한글 포함 vocab 집합의 Jaccard 유사도를 비교하면 뚜렷한 군집이 보입니다.
   - 한국어 특화 대형 vocab: Motif-3–A.X-K2 0.59, Motif-3–Kanana-2 0.52, Motif-3–Solar Open2 0.49
   - 다국어 모델: Gemma 2–Gemma 4 0.48, GPT-5–Gemma 4 0.44
   - 소형 vocab: Kiwi CoCo LM–A.X-Encoder 0.43
+  - 한국어 인코더 모델: KLUE RoBERTa–KoELECTRA 0.82로 전체에서 가장 높습니다. 두 모델은 Kiwi CoCo LM(0.58, 0.54), A.X-Encoder(0.50, 0.51)와도 비교적 가깝습니다.
   - GPT-4는 어느 모델과도 0.12 이하입니다.
   - KF-DeBERTa는 한글 vocab이 워낙 많아 어느 모델과도 0.19 이하입니다(가장 가까운 모델은 Kiwi CoCo LM 0.19, K-EXAONE 0.18).
 - **긴 vocab에 드러나는 학습 데이터 성격**: 가장 긴 한글 vocab을 보면 tokenizer 학습 데이터가 어느 분야에 치우쳤는지 짐작할 수 있습니다.
@@ -197,15 +214,15 @@ KF-DeBERTa의 `정분`은 Kiwi가 `정부/N`으로 잘못 분석한 경우로, �
   - Motif-3: `포함하는 것을 특징으로 하는`, `에 도시된 바와 같이` 등 특허 명세서 문체가 vocab으로 들어가 있습니다.
   - K-EXAONE: `정보가 누락되었거나 올바르지 않나요`, `트립어드바이저는 매월 수백만 명의` 등 웹페이지 상투 문구가 많습니다. 공백을 포함한 여러 어절짜리 한글 vocab이 4,766개로 다른 모델(Motif-3 174개, 나머지 0개)보다 월등히 많습니다.
   - A.X-K2 (`십이십이십이…`, `조조조조…`)와 HyperCLOVA X SEED (`소셜그래프소셜그래프…`)에는 같은 글자열이 반복된 vocab이 있습니다. 중복 제거가 덜 된 데이터의 흔적으로 보입니다.
-- **조사 결합형 vocab**: 한국어 특화 byte-level BPE는 `사람` 하나에 ` 사람에게는`, ` 사람으로서`처럼 조사·어미가 붙은 vocab을 30 ~ 44개 두고 있습니다(A.X-K2 44개, K-EXAONE 39개, Kanana-2 37개, Motif-3 30개). 같은 형태가 공백 유무만 달리해서 한 번 더 들어간 경우도 많습니다. 반면 Kiwi CoCo LM, A.X-Encoder, KF-DeBERTa는 `사람`, `정부`를 사실상 명사 단독형으로만 둡니다. 이 차이는 "한글 포함 vocab 대비 고유 형태소 수 비율"에도 드러납니다. 조사 결합형이 많은 A.X-K2, Kanana-2, Motif-3, Solar Open2는 0.33 ~ 0.38로 낮고, Kiwi CoCo LM, A.X-Encoder, KF-DeBERTa는 0.71~0.77로 높습니다.
+- **조사 결합형 vocab**: 한국어 특화 byte-level BPE는 `사람` 하나에 ` 사람에게는`, ` 사람으로서`처럼 조사·어미가 붙은 vocab을 30 ~ 44개 두고 있습니다(A.X-K2 44개, K-EXAONE 39개, Kanana-2 37개, Motif-3 30개). 같은 형태가 공백 유무만 달리해서 한 번 더 들어간 경우도 많습니다. 반면 Kiwi CoCo LM과 WordPiece 방식 모델들(A.X-Encoder, KF-DeBERTa, KoELECTRA, KLUE RoBERTa)은 `사람`, `정부`를 사실상 명사 단독형으로만 둡니다. 이 차이는 "한글 포함 vocab 대비 고유 형태소 수 비율"에도 드러납니다. 조사 결합형이 많은 A.X-K2, Kanana-2, Motif-3, Solar Open2는 0.33 ~ 0.38로 낮고, 이 모델들은 0.71~0.78로 높습니다.
 - **byte-level BPE의 불완전 한글 vocab**: byte-level BPE tokenizer에는 `어\xeb\x96`처럼 한글 음절 뒤에 다음 음절의 UTF-8 바이트 일부가 붙은 vocab이 있습니다. 이런 vocab은 단독으로는 올바른 문자열로 디코딩되지 않습니다.
   - 한국어 특화 tokenizer는 이런 vocab이 350 ~ 450개로 개수는 비슷합니다. 한글 vocab 자체가 많아서 비율은 0.7 ~ 1.4%에 그칩니다.
   - 한글 vocab이 적은 GPT-4는 한글 관련 vocab의 33.88%, GPT-5는 9.71%가 불완전한 조각입니다. 한글 음절을 온전한 단위로 배우지 못하고 바이트 조각으로 나눠 가진 셈입니다.
-  - byte fallback 방식(Gemma 2, Gemma 4)은 바이트 토큰 256개만 따로 두므로 거의 0%이고, WordPiece인 A.X-Encoder와 KF-DeBERTa는 바이트 단위 vocab이 없어 0%입니다.
+  - byte fallback 방식(Gemma 2, Gemma 4)은 바이트 토큰 256개만 따로 두므로 거의 0%이고, WordPiece 방식 모델들은 바이트 단위 vocab이 없어 0%입니다.
 - **드문 음절 처리 방식**: 드문 한글 음절을 처리하는 방식은 tokenizer 유형에 따라 셋으로 나뉩니다.
   - byte-level BPE: 대부분의 드문 음절을 2~3개의 바이트 조각으로 나눕니다. 한국어 특화 tokenizer도 16개 중 `겼`, `뻤` 정도만 한 토큰으로 가지고 있습니다. 정보는 보존되지만 토큰 수가 늘어납니다.
   - byte fallback BPE(Gemma 2, Gemma 4): vocab에 없는 음절을 UTF-8 바이트 3개로 나눕니다. 결과적으로 byte-level BPE보다 토큰 수가 많습니다.
-  - WordPiece(A.X-Encoder, KF-DeBERTa): 음절이 vocab에 있으면 한 토큰, 없으면 UNK입니다. A.X-Encoder는 16개를 모두 가지고 있지만, KF-DeBERTa는 10개를 `[UNK]`로 처리해 원래 글자를 잃어버립니다. 한글 vocab 수는 KF-DeBERTa가 훨씬 많지만, 단독 음절 vocab을 얼마나 확보했는지는 별개입니다.
+  - WordPiece(A.X-Encoder, KF-DeBERTa, KoELECTRA, KLUE RoBERTa): 음절이 vocab에 있으면 한 토큰, 없으면 UNK입니다. A.X-Encoder는 16개를 모두 가지고 있지만, KF-DeBERTa와 KoELECTRA는 10개, KLUE RoBERTa는 14개를 `[UNK]`로 처리해 원래 글자를 잃어버립니다. 한글 vocab 수는 KF-DeBERTa가 훨씬 많지만, 단독 음절 vocab을 얼마나 확보했는지는 별개입니다.
 
 ## 분석 대상
 
@@ -221,6 +238,8 @@ KF-DeBERTa의 `정분`은 Kiwi가 `정부/N`으로 잘못 분석한 경우로, �
 | [tokenizer_k_exaone_236b.md](reports/tokenizer_k_exaone_236b.md) | [`LGAI-EXAONE/K-EXAONE-236B-A23B`](https://huggingface.co/LGAI-EXAONE/K-EXAONE-236B-A23B) |
 | [tokenizer_solar_open2_250b.md](reports/tokenizer_solar_open2_250b.md) | [`upstage/Solar-Open2-250B`](https://huggingface.co/upstage/Solar-Open2-250B) |
 | [tokenizer_ax_k2.md](reports/tokenizer_ax_k2.md) | [`skt/A.X-K2`](https://huggingface.co/skt/A.X-K2) |
+| [tokenizer_koelectra.md](reports/tokenizer_koelectra.md) | [`monologg/koelectra-base-v3-discriminator`](https://huggingface.co/monologg/koelectra-base-v3-discriminator) |
+| [tokenizer_klue_roberta.md](reports/tokenizer_klue_roberta.md) | [`klue/roberta-base`](https://huggingface.co/klue/roberta-base) |
 | [tokenizer_kiwi.md](reports/tokenizer_kiwi.md) | [`kiwi-farm/kiwi-coco-lm-base`](https://huggingface.co/kiwi-farm/kiwi-coco-lm-base) |
 | [tokenizer_ax_encoder.md](reports/tokenizer_ax_encoder.md) | [`skt/A.X-Encoder-base`](https://huggingface.co/skt/A.X-Encoder-base) |
 | [tokenizer_kf_deberta.md](reports/tokenizer_kf_deberta.md) | [`kakaobank/kf-deberta-base`](https://huggingface.co/kakaobank/kf-deberta-base) |
