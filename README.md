@@ -7,6 +7,8 @@ vocab 중 한글이 들어간 토큰을 골라 [Kiwi](https://github.com/bab2min
 
 ### Vocab 구성
 
+tokenizer별 vocab 규모와 한글 vocab 비중입니다. 한글 포함 비율이 낮은 순으로 정렬했습니다.
+
 | 모델 | 방식 | 전체 vocab 수 | 한글 포함 vocab 수 | 한글 포함 비율 | 고유 형태소 수 | 한글 vocab 평균 글자 수 |
 | --- | --- | ---: | ---: | ---: | ---: | ---: |
 | [GPT-4 (cl100k_base)](reports/tokenizer_gpt4.md) | Byte-level BPE | 100,261 | 299 | 0.30% | 248 | 1.76 |
@@ -21,11 +23,11 @@ vocab 중 한글이 들어간 토큰을 골라 [Kiwi](https://github.com/bab2min
 | [K-EXAONE](reports/tokenizer_k_exaone_236b.md) | Byte-level BPE | 153,600 | 39,269 | 25.57% | 18,859 | 3.39 |
 | [Solar Open2](reports/tokenizer_solar_open2_250b.md) | Byte-level BPE | 196,608 | 56,366 | 28.67% | 21,494 | 3.85 |
 | [A.X-K2](reports/tokenizer_ax_k2.md) | Byte-level BPE | 163,840 | 65,265 | 39.83% | 21,617 | 3.42 |
-| [KoELECTRA](reports/tokenizer_koelectra.md) | WordPiece | 35,000 | 29,021 | 82.92% | 22,175 | 3.06 |
-| [KLUE RoBERTa](reports/tokenizer_klue_roberta.md) | WordPiece | 32,000 | 28,445 | 88.89% | 22,239 | 3.12 |
 | [Kiwi CoCo LM](reports/tokenizer_kiwi.md) | Byte-level BPE | 64,000 | 26,858 | 41.97% | 19,073 | 2.98 |
 | [A.X-Encoder](reports/tokenizer_ax_encoder.md) | WordPiece | 50,000 | 24,084 | 48.17% | 17,501 | 2.63 |
 | [KF-DeBERTa](reports/tokenizer_kf_deberta.md) | WordPiece | 130,000 | 104,522 | 80.40% | 80,239 | 3.53 |
+| [KoELECTRA](reports/tokenizer_koelectra.md) | WordPiece | 35,000 | 29,021 | 82.92% | 22,175 | 3.06 |
+| [KLUE RoBERTa](reports/tokenizer_klue_roberta.md) | WordPiece | 32,000 | 28,445 | 88.89% | 22,239 | 3.12 |
 
 - 한글 포함 vocab: 완성형 한글(가–힣)이 한 글자 이상 들어 있는 일반 vocab (특수 토큰 제외)
 - 고유 형태소 수: 한글 포함 vocab을 Kiwi로 분석해 얻은 서로 다른 형태소/품사 쌍의 수
