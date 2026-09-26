@@ -164,13 +164,14 @@ def print_korean_vocab_shapes(fout, all_normal_vocabs, korean_vocabs, top_n):
         (rank, (vocab,), unit, count) for rank, (vocab, (unit, count)) in enumerate(repeated[:top_n], 1)
     ], vocab_column=1)
 
-def print_markdown_table(fout, headers, rows, vocab_column=None):
+def print_markdown_table(fout, headers, rows, vocab_column=None, sort_vocabs=True):
+    vocab_columns = {vocab_column} if isinstance(vocab_column, int) else set(vocab_column or ())
     print('| ' + ' | '.join(headers) + ' |', file=fout)
     print('| ' + ' | '.join('---' for _ in headers) + ' |', file=fout)
     for row in rows:
         cells = [
-            ', '.join(markdown_code(vocab).replace('|', r'\|') for vocab in sorted(cell))
-            if index == vocab_column else markdown_cell(cell)
+            ', '.join(markdown_code(vocab).replace('|', r'\|') for vocab in (sorted(cell) if sort_vocabs else cell))
+            if index in vocab_columns else markdown_cell(cell)
             for index, cell in enumerate(row)
         ]
         print('| ' + ' | '.join(cells) + ' |', file=fout)
@@ -284,11 +285,11 @@ def read_sample(path):
     with open(path, encoding='utf-8', newline='') as f:
         return f.read()
 
-def print_sample_token_stats(fout, encode, samples):
+def print_sample_token_stats(fout, tokenize, samples):
     print('## 샘플 문서 토큰화 통계\n', file=fout)
     rows = []
     for lang, text in samples.items():
-        tokens = len(encode(text))
+        tokens = len(tokenize(text))
         n_bytes = len(text.encode('utf-8'))
         n_words = len(text.split())
         rows.append((
@@ -351,8 +352,35 @@ def describe_tokenizer(backend):
         '사전 분할': ' → '.join(map(describe_step, pre_steps)) or '없음',
     }
 
+# 현대 한국어에서 드물게 쓰이는 완성형 한글 음절 (--rare-syllables로 교체 가능)
+DEFAULT_RARE_SYLLABLES = ['걁', '겼', '긂', '깄', '뇄', '렜', '뢔', '뢨', '붴', '뻤', '쌘', '얬', '칢', '텼', '퉜', '홥']
+
+def print_rare_syllable_tokens(fout, tokenize, unk_token, syllables):
+    print('## 드문 한글 음절 분절\n', file=fout)
+    results = [
+        (syllable, tokenize(syllable), tokenize(' ' + syllable))
+        for syllable in dict.fromkeys(syllables)
+    ]
+    unknown = [syllable for syllable, alone, spaced in results if unk_token in alone + spaced]
+    single = sum(len(alone) == 1 and syllable not in unknown for syllable, alone, _ in results)
+    total = sum(len(alone) for _, alone, _ in results)
+    print_markdown_table(fout, ('항목', '값'), (
+        ('확인한 음절 수', f'{len(results):,}'),
+        ('단일 토큰으로 처리된 음절 수', f'{single:,}'),
+        ('UNK로 처리된 음절 수', f'{len(unknown):,}' if unk_token else '해당 없음 (UNK 토큰 없음)'),
+        ('음절당 평균 토큰 수', f'{total / len(results):.2f}' if results else '0.00'),
+    ))
+    print_markdown_table(fout, ('음절', '토큰 수', '분절 결과', '공백 뒤 토큰 수', '공백 뒤 분절 결과'), [
+        (syllable, len(alone), alone, len(spaced), spaced)
+        for syllable, alone, spaced in results
+    ], vocab_column=(2, 4), sort_vocabs=False)
+    print('음절을 단독으로 토큰화한 결과와 앞에 공백을 붙여 토큰화한 결과입니다. '
+          '분절 결과는 토큰 순서대로 표시하며, 미완성 UTF-8 바이트는 `\\xNN`으로, 특수 토큰(UNK 등)은 원래 표기로 나타냅니다. '
+          'UNK로 처리된 음절은 원래 정보가 사라지므로 토큰이 하나여도 단일 토큰으로 세지 않습니다. '
+          'WordPiece tokenizer에서는 단어 첫머리 토큰 앞에 공백을 붙여 표시합니다.\n', file=fout)
+
 def load_vocab(source):
-    """실제 vocab 수, ID 순서의 일반 vocab 표면형, 텍스트 인코딩 함수, tokenizer 방식 정보를 반환"""
+    """실제 vocab 수, ID 순서의 일반 vocab 표면형, 텍스트를 토큰 표면형 목록으로 나누는 함수, UNK 토큰, tokenizer 방식 정보를 반환"""
     if source.startswith('tiktoken:'):
         name = source.removeprefix('tiktoken:')
         if not name:
@@ -371,7 +399,10 @@ def load_vocab(source):
         vocab_count = len(token_bytes) + len(encoding.special_tokens_set)
         return (
             vocab_count, [raw.decode('utf-8', errors='backslashreplace') for raw in token_bytes],
-            encoding.encode_ordinary, {
+            lambda text: [
+                encoding.decode_single_token_bytes(token).decode('utf-8', errors='backslashreplace')
+                for token in encoding.encode_ordinary(text)
+            ], None, {
                 '방식': 'Byte-level BPE (tiktoken)',
                 '기본 단위': 'UTF-8 바이트 (byte-level)',
                 '정규화': '없음',
@@ -394,14 +425,17 @@ def load_vocab(source):
         decoded = decoder.decode(token)
         if decoded:
             normal_vocabs.append(decoded)
-    return (
-        len(vocab), normal_vocabs, lambda text: tokenizer.encode(text, add_special_tokens=False),
-        describe_tokenizer(backend),
-    )
+    def tokenize(text):
+        ids = tokenizer.encode(text, add_special_tokens=False)
+        return [
+            token if index in added_tokens or index == tokenizer.unk_token_id else decoder.decode(token)
+            for index, token in zip(ids, tokenizer.convert_ids_to_tokens(ids))
+        ]
+    return len(vocab), normal_vocabs, tokenize, tokenizer.unk_token, describe_tokenizer(backend)
 
 
 def main(args):
-    vocab_count, all_normal_vocabs, encode, tokenizer_info = load_vocab(args.tokenizer)
+    vocab_count, all_normal_vocabs, tokenize, unk_token, tokenizer_info = load_vocab(args.tokenizer)
     samples = {
         '한국어': read_sample(args.ko_sample),
         '영어': read_sample(args.en_sample),
@@ -443,7 +477,8 @@ def main(args):
         print('한글 포함 여부는 완성형 한글(가–힣)을 기준으로 합니다. '
               '평균 글자 수에는 공백을 포함하며, 연속된 미완성 UTF-8 바이트 배열은 한 덩어리를 한 글자로 계산합니다.\n', file=fout)
 
-        print_sample_token_stats(fout, encode, samples)
+        print_sample_token_stats(fout, tokenize, samples)
+        print_rare_syllable_tokens(fout, tokenize, unk_token, args.rare_syllables)
         print_korean_vocab_shapes(fout, all_normal_vocabs, all_korean_vocabs, max(0, args.vocab_top_n))
 
         print_morph_rankings(
@@ -477,5 +512,6 @@ if __name__ == '__main__':
     parser.add_argument('--no-concat-nouns', dest='concat_nouns', action='store_false')
     parser.add_argument('--include-s', action='store_true')
     parser.add_argument('--ko-sample', metavar='FILE', default=SAMPLE_DIR / 'ko.txt')
+    parser.add_argument('--rare-syllables', nargs='+', default=DEFAULT_RARE_SYLLABLES, metavar='SYLLABLE')
     parser.add_argument('--en-sample', metavar='FILE', default=SAMPLE_DIR / 'en.txt')
     main(parser.parse_args())
