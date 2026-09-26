@@ -10,9 +10,11 @@ vocab 중 한글이 들어간 토큰을 골라 [Kiwi](https://github.com/bab2min
 | 모델 | 방식 | 전체 vocab 수 | 한글 포함 vocab 수 | 한글 포함 비율 | 고유 형태소 수 | 한글 vocab 평균 글자 수 |
 | --- | --- | ---: | ---: | ---: | ---: | ---: |
 | [GPT-4 (cl100k_base)](reports/tokenizer_gpt4.md) | Byte-level BPE | 100,261 | 299 | 0.30% | 248 | 1.76 |
+| [DeepSeek-V4](reports/tokenizer_deepseek_v4.md) | Byte-level BPE | 129,280 | 1,131 | 0.87% | 731 | 1.93 |
 | [Gemma 2 (mmBERT-base)](reports/tokenizer_gemma2.md) | BPE (byte fallback) | 256,000 | 2,295 | 0.90% | 1,755 | 1.42 |
 | [GPT-5 (o200k_base)](reports/tokenizer_gpt5.md) | Byte-level BPE | 200,000 | 2,365 | 1.18% | 1,507 | 2.14 |
 | [Gemma 4](reports/tokenizer_gemma4.md) | BPE (byte fallback) | 262,144 | 4,561 | 1.74% | 2,957 | 2.05 |
+| [Qwen3.8](reports/tokenizer_qwen3_8.md) | Byte-level BPE | 248,077 | 6,793 | 2.74% | 3,839 | 2.61 |
 | [HyperCLOVA X SEED](reports/tokenizer_hyperclovax_seed.md) | Byte-level BPE | 110,524 | 10,067 | 9.11% | 5,287 | 2.82 |
 | [Motif-3](reports/tokenizer_motif3.md) | Byte-level BPE | 220,160 | 51,410 | 23.35% | 19,312 | 3.47 |
 | [Kanana-2](reports/tokenizer_kanana2.md) | Byte-level BPE | 128,256 | 31,111 | 24.26% | 11,724 | 3.16 |
@@ -45,8 +47,10 @@ vocab 중 한글이 들어간 토큰을 골라 [Kiwi](https://github.com/bab2min
 | KoELECTRA | 1,303 | 2.44 | 4.73 | 1,722 | 2.48 | 2.61 |
 | HyperCLOVA X SEED | 1,336 | 2.50 | 4.61 | 901 | 1.30 | 5.00 |
 | A.X-Encoder | 1,356 | 2.54 | 4.54 | 1,313 | 1.89 | 3.43 |
+| Qwen3.8 | 1,383 | 2.59 | 4.46 | 893 | 1.29 | 5.04 |
 | Gemma 4 | 1,499 | 2.81 | 4.11 | 865 | 1.25 | 5.21 |
 | GPT-5 (o200k_base) | 1,582 | 2.96 | 3.90 | 874 | 1.26 | 5.15 |
+| DeepSeek-V4 | 1,704 | 3.19 | 3.62 | 858 | 1.24 | 5.25 |
 | Gemma 2 (mmBERT-base) | 1,763 | 3.30 | 3.50 | 859 | 1.24 | 5.24 |
 | GPT-4 (cl100k_base) | 2,551 | 4.78 | 2.42 | 889 | 1.28 | 5.07 |
 
@@ -58,9 +62,11 @@ vocab 중 한글이 들어간 토큰을 골라 [Kiwi](https://github.com/bab2min
 | 모델 | 5글자 이상 | 10글자 이상 | 여러 어절 | 반복 패턴 | 불완전 한글 vocab 수 | 불완전 한글 vocab 비율 |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: |
 | GPT-4 (cl100k_base) | 0 | 0 | 0 | 0 | 144 | 33.88% |
+| DeepSeek-V4 | 0 | 0 | 0 | 0 | 214 | 16.04% |
 | Gemma 2 (mmBERT-base) | 1 | 0 | 0 | 0 | 4 | 0.17% |
 | GPT-5 (o200k_base) | 7 | 0 | 0 | 0 | 253 | 9.71% |
 | Gemma 4 | 20 | 0 | 0 | 0 | 4 | 0.09% |
+| Qwen3.8 | 55 | 0 | 0 | 0 | 254 | 3.60% |
 | HyperCLOVA X SEED | 127 | 2 | 0 | 1 | 358 | 3.46% |
 | Motif-3 | 2,282 | 5 | 174 | 0 | 408 | 0.79% |
 | Kanana-2 | 770 | 1 | 0 | 1 | 395 | 1.26% |
@@ -85,9 +91,11 @@ vocab 중 한글이 들어간 토큰을 골라 [Kiwi](https://github.com/bab2min
 | 모델 | `사람` vocab 수 | `사람` 고유 형태 수 | `정부` vocab 수 | `정부` 고유 형태 수 |
 | --- | ---: | ---: | ---: | ---: |
 | GPT-4 (cl100k_base) | 0 | 0 | 0 | 0 |
+| DeepSeek-V4 | 1 | 1 | 0 | 0 |
 | Gemma 2 (mmBERT-base) | 1 | 1 | 0 | 0 |
 | GPT-5 (o200k_base) | 2 | 2 | 2 | 1 |
 | Gemma 4 | 4 | 3 | 1 | 1 |
+| Qwen3.8 | 7 | 6 | 5 | 4 |
 | HyperCLOVA X SEED | 9 | 8 | 9 | 5 |
 | Motif-3 | 30 | 25 | 15 | 9 |
 | Kanana-2 | 37 | 26 | 12 | 7 |
@@ -110,9 +118,11 @@ vocab 중 한글이 들어간 토큰을 골라 [Kiwi](https://github.com/bab2min
 | 모델 | vocab 수 | vocab 목록 |
 | --- | ---: | --- |
 | GPT-4 (cl100k_base) | 0 | 없음 |
+| DeepSeek-V4 | 1 | ` 사람` |
 | Gemma 2 (mmBERT-base) | 1 | ` 사람` |
 | GPT-5 (o200k_base) | 2 | ` 사람`, ` 사람이` |
 | Gemma 4 | 4 | ` 사람`, ` 사람은`, ` 사람이`, `사람` |
+| Qwen3.8 | 7 | ` 사람`, ` 사람에게`, ` 사람은`, ` 사람을`, ` 사람의`, ` 사람이`, `사람` |
 | HyperCLOVA X SEED | 9 | ` 사람`, ` 사람과`, ` 사람도`, ` 사람에게`, ` 사람은`, ` 사람을`, ` 사람의`, ` 사람이`, `사람` |
 | Motif-3 | 30 | ` 사람`, ` 사람과`, ` 사람과의`, ` 사람도`, ` 사람마다`, ` 사람만`, ` 사람보다`, ` 사람에`, ` 사람에게`, ` 사람에게는`, ` 사람으로`, ` 사람으로서`, ` 사람은`, ` 사람을`, ` 사람의`, ` 사람이`, ` 사람이나`, ` 사람이다`, ` 사람이라`, ` 사람이라고`, ` 사람이라면`, ` 사람이었다`, ` 사람인`, ` 사람입니다`, ` 사람처럼`, `사람`, `사람은`, `사람을`, `사람의`, `사람이` |
 | Kanana-2 | 37 | ` 사람`, ` 사람과`, ` 사람과의`, ` 사람도`, ` 사람마다`, ` 사람만`, ` 사람보다`, ` 사람에`, ` 사람에게`, ` 사람에게는`, ` 사람으로`, ` 사람으로서`, ` 사람은`, ` 사람을`, ` 사람의`, ` 사람이`, ` 사람이나`, ` 사람이다`, ` 사람이라`, ` 사람이라고`, ` 사람이라는`, ` 사람이라면`, ` 사람이었다`, ` 사람인`, ` 사람입니다`, ` 사람처럼`, `\xa0사람`, `\xa0사람은`, `\xa0사람을`, `\xa0사람의`, `\xa0사람이`, `사람`, `사람과`, `사람은`, `사람을`, `사람의`, `사람이` |
@@ -130,9 +140,11 @@ vocab 중 한글이 들어간 토큰을 골라 [Kiwi](https://github.com/bab2min
 | 모델 | vocab 수 | vocab 목록 |
 | --- | ---: | --- |
 | GPT-4 (cl100k_base) | 0 | 없음 |
+| DeepSeek-V4 | 0 | 없음 |
 | Gemma 2 (mmBERT-base) | 0 | 없음 |
 | GPT-5 (o200k_base) | 2 | ` 정부`, `정부` |
 | Gemma 4 | 1 | ` 정부` |
+| Qwen3.8 | 5 | ` 정부`, ` 정부가`, ` 정부는`, ` 정부의`, `정부` |
 | HyperCLOVA X SEED | 9 | ` 정부`, ` 정부가`, ` 정부는`, ` 정부와`, ` 정부의`, `정부`, `정부가`, `정부는`, `정부의` |
 | Motif-3 | 15 | ` 정부`, ` 정부가`, ` 정부는`, ` 정부도`, ` 정부를`, ` 정부에`, ` 정부에서`, ` 정부와`, ` 정부의`, `정부`, `정부가`, `정부는`, `정부에`, `정부와`, `정부의` |
 | Kanana-2 | 12 | ` 정부`, ` 정부가`, ` 정부는`, ` 정부에`, ` 정부에서`, ` 정부와`, ` 정부의`, `\xa0정부`, `정부`, `정부가`, `정부는`, `정부의` |
@@ -165,9 +177,11 @@ KF-DeBERTa의 `정분`은 Kiwi가 `정부/N`으로 잘못 분석한 경우로, �
 | KoELECTRA | 26 | 0 | |
 | Kiwi CoCo LM | 25 | 0 | |
 | A.X-Encoder | 20 | 0 | |
+| Qwen3.8 | 15 | 0 | |
 | Gemma 4 | 3 | 0 | |
 | GPT-4 (cl100k_base) | 0 | 0 | |
 | Gemma 2 (mmBERT-base) | 0 | 0 | |
+| DeepSeek-V4 | 0 | 0 | |
 
 - **정규식 매치 vocab 수**: 위 정규식에 걸리는 vocab 수로, 각 보고서의 "정규식 검색 vocab"과 같은 값입니다. `추천드립니다`, `주택담보대출`, `웹사이트`, `오피스텔`처럼 평범한 단어도 함께 걸리므로 이 값만으로 스팸 오염도를 판단할 수는 없습니다. Solar Open2의 매치 138개 중 67개는 `매출채권담보대출` 같은 금융 용어의 `대출`입니다.
 - **스팸성 vocab 수**: `출장마사지`, `콜걸`, `토토사이트`, `먹튀검증`처럼 광고 문구에서만 쓰이는 합성어로 좁혀서 센 값입니다. `마사지`, `카지노`, `놀이터`처럼 단독으로도 쓰이는 단어는 제외했습니다.
@@ -180,9 +194,11 @@ KF-DeBERTa의 `정분`은 Kiwi가 `정부/N`으로 잘못 분석한 경우로, �
 | 모델 | 한 토큰으로 처리된 음절 수 | UNK로 처리된 음절 수 | 음절당 평균 토큰 수 | 한 토큰으로 처리된 음절 | `퉜`의 분절 결과 |
 | --- | ---: | ---: | ---: | --- | --- |
 | GPT-4 (cl100k_base) | 0 | - | 2.44 | 없음 | `\xed`, `\x89`, `\x9c` |
+| DeepSeek-V4 | 0 | - | 2.38 | 없음 | `\xed`, `\x89`, `\x9c` |
 | Gemma 2 (mmBERT-base) | 0 | 0 | 3.75 | 없음 | ` `, `\xed`, `\x89`, `\x9c` |
 | GPT-5 (o200k_base) | 1 | - | 2.31 | `겼` | `\xed`, `\x89`, `\x9c` |
 | Gemma 4 | 4 | 0 | 2.50 | `겼`, `렜`, `뢨`, `뻤` | `\xed`, `\x89`, `\x9c` |
+| Qwen3.8 | 1 | - | 2.06 | `겼` | `\xed`, `\x89`, `\x9c` |
 | HyperCLOVA X SEED | 1 | 0 | 2.12 | `겼` | `\xed`, `\x89`, `\x9c` |
 | Motif-3 | 2 | - | 2.00 | `겼`, `뻤` | `\xed\x89`, `\x9c` |
 | Kanana-2 | 2 | - | 2.06 | `겼`, `뻤` | `\xed`, `\x89`, `\x9c` |
@@ -201,13 +217,14 @@ KF-DeBERTa의 `정분`은 Kiwi가 `정부/N`으로 잘못 분석한 경우로, �
 
 ## 주요 발견 사항
 
-- **한글 vocab 수와 효율**: 한글 포함 vocab이 3만 개를 넘는 tokenizer(Kanana-2 3.1만, K-EXAONE 3.9만, Motif-3 5.1만, Solar Open2 5.6만, A.X-K2 6.5만)는 샘플 문서에서 모두 어절당 1.96 ~ 2.05토큰으로 거의 같았습니다. 이 구간에서는 한글 vocab을 더 늘려도 토큰 수가 크게 줄지 않았습니다. 반면 GPT-4(cl100k_base)는 한글 vocab이 299개뿐이라 어절당 4.78토큰으로 두 배 이상 많습니다. 한글 포함 vocab이 10만 개로 가장 많은 KF-DeBERTa는 어절당 2.19토큰으로, 한글 vocab 수에 비해 효율 이득이 크지 않았습니다. 전체 vocab이 3만 개대인 KLUE RoBERTa(2.41)와 KoELECTRA(2.44)도 Kiwi CoCo LM과 비슷한 수준입니다. 다만 두 모델은 vocab 대부분을 한국어에 써서 영어는 단어당 약 2.5토큰으로, 다른 모델(1.0 ~ 1.9)보다 크게 불리합니다. 전체 vocab이 64,000개인 Kiwi CoCo LM(어절당 2.37토큰)도 20만 개 안팎의 다국어 tokenizer(GPT-5 2.96, Gemma 4 2.81)보다 한국어를 효율적으로 처리합니다.
+- **한글 vocab 수와 효율**: 한글 포함 vocab이 3만 개를 넘는 tokenizer(Kanana-2 3.1만, K-EXAONE 3.9만, Motif-3 5.1만, Solar Open2 5.6만, A.X-K2 6.5만)는 샘플 문서에서 모두 어절당 1.96 ~ 2.05토큰으로 거의 같았습니다. 이 구간에서는 한글 vocab을 더 늘려도 토큰 수가 크게 줄지 않았습니다. 반면 GPT-4(cl100k_base)는 한글 vocab이 299개뿐이라 어절당 4.78토큰으로 두 배 이상 많습니다. 한글 포함 vocab이 10만 개로 가장 많은 KF-DeBERTa는 어절당 2.19토큰으로, 한글 vocab 수에 비해 효율 이득이 크지 않았습니다. 전체 vocab이 3만 개대인 KLUE RoBERTa(2.41)와 KoELECTRA(2.44)도 Kiwi CoCo LM과 비슷한 수준입니다. 다만 두 모델은 vocab 대부분을 한국어에 써서 영어는 단어당 약 2.5토큰으로, 다른 모델(1.0 ~ 1.9)보다 크게 불리합니다. 전체 vocab이 64,000개인 Kiwi CoCo LM(어절당 2.37토큰)도 20만 개 안팎의 다국어 tokenizer(Qwen3.8 2.59, Gemma 4 2.81, GPT-5 2.96, DeepSeek-V4 3.19)보다 한국어를 효율적으로 처리합니다.
 - **한국어 vocab의 유사도**: 모델 간 한글 포함 vocab 집합의 Jaccard 유사도를 비교하면 뚜렷한 군집이 보입니다.
   - 한국어 특화 대형 vocab: Motif-3–A.X-K2 0.59, Motif-3–Kanana-2 0.52, Motif-3–Solar Open2 0.49
-  - 다국어 모델: Gemma 2–Gemma 4 0.48, GPT-5–Gemma 4 0.44
+  - 다국어 모델: Gemma 2–Gemma 4 0.48, GPT-5–DeepSeek-V4 0.45, GPT-5–Gemma 4 0.44
+  - Qwen3.8–HyperCLOVA X SEED: 0.61로, KLUE RoBERTa–KoELECTRA 다음으로 높습니다. 한글 vocab 수가 6,793개와 10,067개로 규모도 비슷해서, 두 tokenizer의 한글 vocab 구성이 매우 닮아 있습니다.
   - 소형 vocab: Kiwi CoCo LM–A.X-Encoder 0.43
   - 한국어 인코더 모델: KLUE RoBERTa–KoELECTRA 0.82로 전체에서 가장 높습니다. 두 모델은 Kiwi CoCo LM(0.58, 0.54), A.X-Encoder(0.50, 0.51)와도 비교적 가깝습니다.
-  - GPT-4는 어느 모델과도 0.12 이하입니다.
+  - GPT-4는 DeepSeek-V4(0.25)를 제외하면 어느 모델과도 0.12 이하입니다. 두 tokenizer 모두 한글 vocab이 적고(299개, 1,131개) `있습니다`, `합니다`처럼 아주 흔한 형태만 가지고 있어서 겹치는 부분이 상대적으로 큽니다.
   - KF-DeBERTa는 한글 vocab이 워낙 많아 어느 모델과도 0.19 이하입니다(가장 가까운 모델은 Kiwi CoCo LM 0.19, K-EXAONE 0.18).
 - **긴 vocab에 드러나는 학습 데이터 성격**: 가장 긴 한글 vocab을 보면 tokenizer 학습 데이터가 어느 분야에 치우쳤는지 짐작할 수 있습니다.
   - Solar Open2: `미상환전환형조건부자본증권등발행현황`, `연결재무제표를작성하는주권상장법인` 등 기업 공시·재무 용어가 많고, 5글자 이상 한글 vocab이 7,920개로 가장 많습니다. 반복 패턴 vocab도 `찬성찬성찬성찬성찬성`, `가결가결가결가결가결`, `보통주보통주보통주보통주`처럼 주주총회 결과 공시에서 나온 것들입니다.
@@ -217,7 +234,7 @@ KF-DeBERTa의 `정분`은 Kiwi가 `정부/N`으로 잘못 분석한 경우로, �
 - **조사 결합형 vocab**: 한국어 특화 byte-level BPE는 `사람` 하나에 ` 사람에게는`, ` 사람으로서`처럼 조사·어미가 붙은 vocab을 30 ~ 44개 두고 있습니다(A.X-K2 44개, K-EXAONE 39개, Kanana-2 37개, Motif-3 30개). 같은 형태가 공백 유무만 달리해서 한 번 더 들어간 경우도 많습니다. 반면 Kiwi CoCo LM과 WordPiece 방식 모델들(A.X-Encoder, KF-DeBERTa, KoELECTRA, KLUE RoBERTa)은 `사람`, `정부`를 사실상 명사 단독형으로만 둡니다. 이 차이는 "한글 포함 vocab 대비 고유 형태소 수 비율"에도 드러납니다. 조사 결합형이 많은 A.X-K2, Kanana-2, Motif-3, Solar Open2는 0.33 ~ 0.38로 낮고, 이 모델들은 0.71~0.78로 높습니다.
 - **byte-level BPE의 불완전 한글 vocab**: byte-level BPE tokenizer에는 `어\xeb\x96`처럼 한글 음절 뒤에 다음 음절의 UTF-8 바이트 일부가 붙은 vocab이 있습니다. 이런 vocab은 단독으로는 올바른 문자열로 디코딩되지 않습니다.
   - 한국어 특화 tokenizer는 이런 vocab이 350 ~ 450개로 개수는 비슷합니다. 한글 vocab 자체가 많아서 비율은 0.7 ~ 1.4%에 그칩니다.
-  - 한글 vocab이 적은 GPT-4는 한글 관련 vocab의 33.88%, GPT-5는 9.71%가 불완전한 조각입니다. 한글 음절을 온전한 단위로 배우지 못하고 바이트 조각으로 나눠 가진 셈입니다.
+  - 한글 vocab이 적은 GPT-4는 한글 관련 vocab의 33.88%, DeepSeek-V4는 16.04%, GPT-5는 9.71%, Qwen3.8은 3.60%가 불완전한 조각입니다. 한글 음절을 온전한 단위로 배우지 못하고 바이트 조각으로 나눠 가진 셈입니다.
   - byte fallback 방식(Gemma 2, Gemma 4)은 바이트 토큰 256개만 따로 두므로 거의 0%이고, WordPiece 방식 모델들은 바이트 단위 vocab이 없어 0%입니다.
 - **드문 음절 처리 방식**: 드문 한글 음절을 처리하는 방식은 tokenizer 유형에 따라 셋으로 나뉩니다.
   - byte-level BPE: 대부분의 드문 음절을 2~3개의 바이트 조각으로 나눕니다. 한국어 특화 tokenizer도 16개 중 `겼`, `뻤` 정도만 한 토큰으로 가지고 있습니다. 정보는 보존되지만 토큰 수가 늘어납니다.
@@ -230,8 +247,10 @@ KF-DeBERTa의 `정분`은 Kiwi가 `정부/N`으로 잘못 분석한 경우로, �
 | --- | --- |
 | [tokenizer_gpt4.md](reports/tokenizer_gpt4.md) | `tiktoken:cl100k_base` |
 | [tokenizer_gpt5.md](reports/tokenizer_gpt5.md) | `tiktoken:o200k_base` |
+| [tokenizer_deepseek_v4.md](reports/tokenizer_deepseek_v4.md) | [`deepseek-ai/DeepSeek-V4-Pro`](https://huggingface.co/deepseek-ai/DeepSeek-V4-Pro) |
 | [tokenizer_gemma2.md](reports/tokenizer_gemma2.md) | [`jhu-clsp/mmBERT-base`](https://huggingface.co/jhu-clsp/mmBERT-base) |
 | [tokenizer_gemma4.md](reports/tokenizer_gemma4.md) | [`google/gemma-4-31B-it`](https://huggingface.co/google/gemma-4-31B-it) |
+| [tokenizer_qwen3_8.md](reports/tokenizer_qwen3_8.md) | [`Qwen/Qwen3.8-27B`](https://huggingface.co/Qwen/Qwen3.8-27B) |
 | [tokenizer_hyperclovax_seed.md](reports/tokenizer_hyperclovax_seed.md) | [`naver-hyperclovax/HyperCLOVAX-SEED-Think-14B`](https://huggingface.co/naver-hyperclovax/HyperCLOVAX-SEED-Think-14B) |
 | [tokenizer_motif3.md](reports/tokenizer_motif3.md) | [`Motif-Technologies/Motif-3`](https://huggingface.co/Motif-Technologies/Motif-3) |
 | [tokenizer_kanana2.md](reports/tokenizer_kanana2.md) | [`kakaocorp/kanana-2-30b-a3b-instruct`](https://huggingface.co/kakaocorp/kanana-2-30b-a3b-instruct) |
