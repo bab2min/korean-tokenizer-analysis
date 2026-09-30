@@ -379,8 +379,88 @@ def print_rare_syllable_tokens(fout, tokenize, unk_token, syllables):
           'UNK로 처리된 음절은 원래 정보가 사라지므로 토큰이 하나여도 단일 토큰으로 세지 않습니다. '
           'WordPiece tokenizer에서는 단어 첫머리 토큰 앞에 공백을 붙여 표시합니다.\n', file=fout)
 
+def char_byte_starts(text):
+    starts = [0]
+    for char in text:
+        starts.append(starts[-1] + len(char.encode('utf-8')))
+    return starts
+
+def cumulative_byte_spans(text, lengths):
+    spans = []
+    offset = 0
+    for length in lengths:
+        spans.append((offset, offset + length))
+        offset += length
+    if offset != len(text.encode('utf-8')):
+        raise ValueError('Wrong lengths: sum(lengths) != len(text.encode("utf-8"))')
+    return spans
+
+def boundary_positions(text, byte_spans):
+    """토큰의 바이트 범위에서 토큰 시작 위치를 글자 단위로 구한다.
+    음절 중간에서 시작하면 그 음절 안의 바이트 위치에 따라 +1/3, +2/3처럼 소수 위치가 된다."""
+    starts = char_byte_starts(text)
+    char_of_byte = [index for index, char in enumerate(text) for _ in char.encode('utf-8')]
+    positions = set()
+    for begin, end in byte_spans:
+        # 토큰 앞에 붙은 공백은 건너뛰고 첫 글자를 토큰 시작으로 본다
+        while begin < end and starts[char_of_byte[begin]] == begin and text[char_of_byte[begin]].isspace():
+            begin = starts[char_of_byte[begin] + 1]
+        if begin >= end:
+            continue
+        char = char_of_byte[begin]
+        positions.add(char + (begin - starts[char]) / (starts[char + 1] - starts[char]))
+    return positions
+
+def morpheme_positions(morphs):
+    """형태소 시작 위치. 다투+었(다퉜)처럼 앞 형태소와 글자가 겹치면 그 음절 안의 경계로 보고 +0.5로 나타낸다."""
+    positions = set()
+    prev_end = 0
+    for morph in morphs:
+        positions.add(morph.start + 0.5 if morph.start < prev_end else morph.start)
+        prev_end = morph.start + morph.len
+    return positions
+
+def is_word_start(text, position):
+    """문서 처음이거나 공백 바로 뒤인 어절 첫 글자 위치인지 판별"""
+    return position % 1 == 0 and (position == 0 or text[int(position) - 1].isspace())
+
+def boundary_scores(gold, predicted):
+    correct = len(predicted & gold)
+    precision = correct / len(predicted) if predicted else 0.0
+    recall = correct / len(gold) if gold else 0.0
+    f1 = 2 * precision * recall / (precision + recall) if precision + recall else 0.0
+    return correct, precision, recall, f1
+
+def print_morpheme_boundary_stats(fout, kiwi, token_byte_spans, text):
+    print('## 형태소 경계 일치도\n', file=fout)
+    gold = morpheme_positions(kiwi.tokenize(text))
+    predicted = boundary_positions(text, token_byte_spans(text))
+    in_word = lambda positions: {position for position in positions if not is_word_start(text, position)}
+    settings = [(gold, predicted), (in_word(gold), in_word(predicted))]
+    scores = [boundary_scores(*setting) for setting in settings]
+    rows = [
+        ('형태소 경계 수', [len(g) for g, _ in settings]),
+        ('음절 내부 형태소 경계 수', [sum(position % 1 > 0 for position in g) for g, _ in settings]),
+        ('토큰 경계 수', [len(p) for _, p in settings]),
+        ('음절 중간 토큰 경계 수', [sum(position % 1 > 0 for position in p) for _, p in settings]),
+        ('일치한 경계 수', [score[0] for score in scores]),
+    ]
+    print_markdown_table(fout, ('항목', '전체 경계', '단어 내 경계'), [
+        *((name, *(f'{value:,}' for value in values)) for name, values in rows),
+        *((name, *(f'{score[index]:.2%}' for score in scores))
+          for index, name in ((1, 'Precision'), (2, 'Recall'), (3, 'F1'))),
+    ])
+    print('한국어 샘플 문서를 Kiwi로 형태소 분석한 경계와 tokenizer의 토큰 경계를 글자 위치 기준으로 비교합니다. '
+          '경계는 각 형태소와 토큰이 시작하는 글자 위치이며, 토큰 앞에 붙은 공백은 건너뛰고 첫 글자를 시작 위치로 봅니다. '
+          '`다퉜`(다투+었), `했`(하+었)처럼 한 음절 안에서 합쳐진 형태소 사이의 경계는 그 음절 위치 +0.5로 나타냅니다. '
+          '토큰이 음절의 UTF-8 바이트 중간에서 시작하면 그 음절 위치에 음절 안의 바이트 위치 비율(한글은 +1/3, +2/3)을 더해 나타내므로, '
+          '바이트 단위로 자른 경계는 형태소 경계와 일치하지 않습니다. '
+          '전체 경계는 어절 사이의 경계(문서 처음과 공백 바로 뒤의 어절 첫 글자)를 포함하고, '
+          '단어 내 경계는 이를 제외한 어절 안쪽의 경계만 비교합니다.\n', file=fout)
+
 def load_vocab(source):
-    """실제 vocab 수, ID 순서의 일반 vocab 표면형, 텍스트를 토큰 표면형 목록으로 나누는 함수, UNK 토큰, tokenizer 방식 정보를 반환"""
+    """실제 vocab 수, ID 순서의 일반 vocab 표면형, 텍스트를 토큰 표면형 목록으로 나누는 함수,
+    토큰별 UTF-8 바이트 범위를 구하는 함수, UNK 토큰, tokenizer 방식 정보를 반환"""
     if source.startswith('tiktoken:'):
         name = source.removeprefix('tiktoken:')
         if not name:
@@ -402,7 +482,9 @@ def load_vocab(source):
             lambda text: [
                 encoding.decode_single_token_bytes(token).decode('utf-8', errors='backslashreplace')
                 for token in encoding.encode_ordinary(text)
-            ], None, {
+            ], lambda text: cumulative_byte_spans(text, (
+                len(encoding.decode_single_token_bytes(token)) for token in encoding.encode_ordinary(text)
+            )), None, {
                 '방식': 'Byte-level BPE (tiktoken)',
                 '기본 단위': 'UTF-8 바이트 (byte-level)',
                 '정규화': '없음',
@@ -431,11 +513,33 @@ def load_vocab(source):
             token if index in added_tokens or index == tokenizer.unk_token_id else decoder.decode(token)
             for index, token in zip(ids, tokenizer.convert_ids_to_tokens(ids))
         ]
-    return len(vocab), normal_vocabs, tokenize, tokenizer.unk_token, describe_tokenizer(backend)
+    byte_level = any(step['type'] == 'ByteLevel' for step in component_steps(backend.pre_tokenizer))
+
+    def token_byte_spans(text):
+        encoded = tokenizer(text, add_special_tokens=False, return_offsets_mapping=True)
+        tokens = tokenizer.convert_ids_to_tokens(encoded['input_ids'])
+        if byte_level:
+            # byte-level 토큰은 한 글자가 한 바이트를 나타내므로 길이를 그대로 누적한다
+            return cumulative_byte_spans(text, map(len, tokens))
+        starts = char_byte_starts(text)
+        spans = []
+        prev_char_end = 0
+        prev_byte_end = 0
+        for token, (start, end) in zip(tokens, encoded['offset_mapping']):
+            if re.fullmatch(r'<0x[0-9a-fA-F]{2}>', token):
+                # byte fallback 토큰: 앞 토큰과 같은 글자를 나눠 가지면 그 글자 안에서 이어지는 바이트
+                begin = prev_byte_end if start < prev_char_end else starts[start]
+                spans.append((begin, begin + 1))
+            else:
+                spans.append((starts[start], starts[end]))
+            prev_char_end, prev_byte_end = end, spans[-1][1]
+        return spans
+
+    return len(vocab), normal_vocabs, tokenize, token_byte_spans, tokenizer.unk_token, describe_tokenizer(backend)
 
 
 def main(args):
-    vocab_count, all_normal_vocabs, tokenize, unk_token, tokenizer_info = load_vocab(args.tokenizer)
+    vocab_count, all_normal_vocabs, tokenize, token_byte_spans, unk_token, tokenizer_info = load_vocab(args.tokenizer)
     samples = {
         '한국어': read_sample(args.ko_sample),
         '영어': read_sample(args.en_sample),
@@ -479,6 +583,7 @@ def main(args):
 
         print_sample_token_stats(fout, tokenize, samples)
         print_rare_syllable_tokens(fout, tokenize, unk_token, args.rare_syllables)
+        print_morpheme_boundary_stats(fout, kiwi, token_byte_spans, samples['한국어'])
         print_korean_vocab_shapes(fout, all_normal_vocabs, all_korean_vocabs, max(0, args.vocab_top_n))
 
         print_morph_rankings(
